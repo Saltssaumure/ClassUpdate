@@ -10,10 +10,12 @@ In your theme's root directory:
 2. `cd ./ClassUpdate`
 3. `python ./replace.py`
 
+Delete or move the `ClassUpdate` folder after use.
+
 ### Default values
 | Variable             | Default value |
 | -------------------- | ------------- |
-| SCSS directory       | `scss`        |
+| S/CSS directory      | `scss`        |
 | S/CSS file extension | `*.scss`      |
 | Diff file name       | `diff.diff`   |
 
