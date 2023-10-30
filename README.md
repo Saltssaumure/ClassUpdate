@@ -1,38 +1,46 @@
 # ClassUpdate
 
-Update classes of Discord themes automagically. The diff file is adapted from 11pixels' provided diff files.
+Update class names of all themes in a folder.
+
+Thanks to SyndiShanX for the diff. If you are updating only a single file, use their online tool instead: https://syndishanx.github.io/Website/Update_Classes.html
+
+## Requirements
+- [git](https://git-scm.com/downloads)
+- [Python 3 (3.11 tested)](https://www.python.org/downloads/)
 
 ## Usage
-⚠ Make a backup of your theme before using this script.
+⚠ Make a backup of your themes before using this script.
 
-In your theme's root directory:
+Next to themes folder:
 1. `git clone https://github.com/Saltssaumure/ClassUpdate`
 2. `cd ./ClassUpdate`
 3. `python ./replace.py`
 
-Delete or move the `ClassUpdate` folder after use.
+Feel free to delete or move the `ClassUpdate` folder after use.
 
-### Default values
-| Variable             | Default value |
-| -------------------- | ------------- |
-| S/CSS directory      | `scss`        |
-| S/CSS file extension | `*.scss`      |
-| Diff file name       | `diff.diff`   |
+## Default values
+| Variable         | Default value                                                                  |
+| ---------------- | ------------------------------------------------------------------------------ |
+| Themes directory | `themes`                                                                       |
+| File extension   | `css`                                                                          |
+| Diff URL         | `https://raw.githubusercontent.com/SyndiShanX/Update-Classes/main/Changes.txt` |
 
-### Assumed file structure
+## Example
 Files marked with `↻` will be updated by the script if using the default values above.
 ```
-MyTheme
-├── scss
-│   ├── main.scss ↻
-│   ├── main.css
-│   └── components
-│       ├── _stuff.scss ↻
-│       └── _things.scss ↻
-├── otherstuff
-│   └── test.scss
-└── ClassUpdate (this tool)
-    ├── diff.diff
+WorseDiscord/
+├── themes/
+│   ├── CoolTheme.theme.css ↻
+│   ├── DarkMode2.theme.css ↻
+│   ├── another.theme.css   ↻
+│   └── testfolder/
+│       ├── test.theme.css  ↻
+│       ├── something.css   ↻
+│       └── wargh.txt
+├── MyCoolWebsite/
+│   ├── site.html
+│   └── main.css
+└── ClassUpdate (this tool)/
     ├── replace.py
     └── README.md
 ```

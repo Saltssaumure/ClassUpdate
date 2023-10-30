@@ -1,27 +1,24 @@
-import re, os, glob
+import re, os, glob, urllib.request
 
 def getParamsFromUser():
     cssDir = "themes"
-    cssExt = "*.scss"
-    oldDiffFileName = "olddiff.txt"
-    newDiffFileName = "newdiff.txt"
+    cssExt = "css"
+    diffUrl = "https://raw.githubusercontent.com/SyndiShanX/Update-Classes/main/Changes.txt"
 
     # Comment out this section if you want to just hardcode the values.
     print("Leave blank to use default values.")
-    cssDir = input(f"S/CSS directory \t(default: {cssDir}):\t") or cssDir
-    cssExt = input(f"S/CSS file extension \t(default: {cssExt}):\t") or cssExt
-    oldDiffFileName = input(f"Old diff file name \t(default: {oldDiffFileName}):\t") or oldDiffFileName
-    newDiffFileName = input(f"New diff file name \t(default: {newDiffFileName}):\t") or newDiffFileName
+    cssDir = input(f"Themes directory \t(default: {cssDir}):\t") or cssDir
+    cssExt = input(f"File extension \t\t(default: {cssExt}):\t") or cssExt
+    diffUrl = input(f"Diff URL \t\t(default: {diffUrl}):\t") or diffUrl
 
     print("\nUsing values:")
-    print("S/CSS directory:\t", cssDir)
-    print("S/CSS file extension:\t", cssExt)
-    print("Old diff file name:\t", oldDiffFileName)
-    print("New diff file name:\t", newDiffFileName)
+    print("Themes directory:\t", cssDir)
+    print("File extension:\t\t", cssExt)
+    print("Diff URL:\t\t", diffUrl)
 
     input("\nPress enter to continue or Ctrl+C to cancel.")
 
-    return cssDir, cssExt, oldDiffFileName, newDiffFileName
+    return cssDir, cssExt, diffUrl
 
 def readFromFile(fileName):
     with open(fileName, "r", encoding="utf-8") as file:
@@ -31,47 +28,19 @@ def writeToFile(fileName, content):
     with open(fileName, "w", encoding="utf-8") as file:
         file.write(content)
 
-def getDiffClassPairs(diffFileName):
-    # Remove start of minus diff
-    regex = re.compile('[-] .*: "')
-    normalised = regex.sub('', readFromFile(diffFileName))
-    # Remove end of minus diff and start of plus diff
-    regex = re.compile('",\n\+.*: "')
-    normalised = regex.sub(',', normalised)
-    # Remove remaining quotes
-    regex = re.compile('",')
-    normalised = regex.sub('', normalised)
-    classPairs = [line.split(",") for line in normalised.splitlines()]
-    # print(classPairs[:10])
-    return classPairs
-
-def getTxtClassPairs(diffFileName):
-    # Format:
-    # oldClassName-123456
-    # newClassName-654321
-    # Repeat for every updated class
-    diffFileContent = readFromFile(diffFileName).splitlines()
+def getClassPairs(diffUrl):
+    diffFileContent = urllib.request.urlopen(diffUrl).read().decode("utf-8").splitlines()
     classPairs = [[oldClass, newClass] for oldClass, newClass in zip(diffFileContent[::2], diffFileContent[1::2])]
-    # print(classPairs[:10])
     return classPairs
 
-def replaceClasses(cssString, oldClassPairs, newClassPairs):
+def replaceClasses(cssString, classPairs):
     replaceCount = 0
 
-    # Replace ancient classes or :is(ancient, old) with old classes
-    for ancientClass, oldClass in oldClassPairs:
+    for oldClass, newClass in classPairs:
         oldCssString = cssString
-        oldCssPair = f":is(.{ancientClass}, .{oldClass})"
 
-        cssString = cssString.replace(oldCssPair, f".{oldClass}")
-        cssString = cssString.replace(ancientClass, oldClass)
-
-        if oldCssString != cssString:
-            replaceCount += 1
-
-    # Replace old classes with new classes
-    for oldClass, newClass in newClassPairs:
-        cssString = cssString.replace(oldClass, newClass)
+        cssPair = f":is(.{oldClass}, .{newClass})"
+        cssString = cssString.replace(cssPair, f".{oldClass}").replace(oldClass, newClass)
 
         if oldCssString != cssString:
             replaceCount += 1
@@ -79,23 +48,20 @@ def replaceClasses(cssString, oldClassPairs, newClassPairs):
     return cssString, replaceCount
 
 def main():
-    cssDir, cssExt, oldDiffFileName, newDiffFileName = getParamsFromUser()
-
-    oldClassPairs = getTxtClassPairs(oldDiffFileName)
-    newClassPairs = getTxtClassPairs(newDiffFileName)
-
+    cssDir, cssExt, diffUrl = getParamsFromUser()
+    classPairs = getClassPairs(diffUrl)
+    cssFileNames = glob.glob(os.path.join("..", cssDir, "**", "*." + cssExt), recursive=True)
     totalReplaceCount = 0
 
-    cssFileNames = glob.glob(os.path.join("..", cssDir, "**", cssExt), recursive=True)
     for cssFileName in cssFileNames:
-        # print(cssFileName)
+        # Get CSS file content
         cssString = readFromFile(cssFileName)
 
-        # Convert ancient classes and :is(ancient, old) class pairs to new classes
-        cssString, replaceCount = replaceClasses(cssString, oldClassPairs, newClassPairs)
+        # Convert old classes and old class pairs to new classes.
+        cssString, replaceCount = replaceClasses(cssString, classPairs)
         totalReplaceCount += replaceCount
 
-        # Write to file
+        # Write CSS to file
         writeToFile(cssFileName, cssString)
 
     print(f"\nReplaced {totalReplaceCount} classes in {len(cssFileNames)} files.")
