@@ -3,22 +3,38 @@ import re, os, glob, urllib.request
 def getParamsFromUser():
     cssDir = "themes"
     cssExt = "css"
-    diffUrl = "https://raw.githubusercontent.com/SyndiShanX/Update-Classes/main/Changes.txt"
+    useLocalDiff = "Y"
+    diffFile = "Changes.txt"
+    diffUrl = "https://raw.githubusercontent.com/Saltssaumure/Update-Classes/main/Changes.txt"
 
     # Comment out this section if you want to just hardcode the values.
     print("Leave blank to use default values.")
     cssDir = input(f"Themes directory \t(default: {cssDir}):\t") or cssDir
-    cssExt = input(f"File extension \t\t(default: {cssExt}):\t") or cssExt
-    diffUrl = input(f"Diff URL \t\t(default: {diffUrl}):\t") or diffUrl
+    cssExt = input(f"File extension \t\t(default: {cssExt}):\t\t") or cssExt
+    useLocalDiff = input(f"Y/N use local diff\t(default: {useLocalDiff}):\t\t") or useLocalDiff
+    if useLocalDiff.lower() == "y":
+        useLocalDiff = True
+        diffUrl = diffFile
+        diffUrl = input(f"Diff file location\t(default: {diffUrl}):\t") or diffUrl
+    else:
+        useLocalDiff = False
+        diffUrl = input(f"Diff URL \t\t(default: {diffUrl}):\t") or diffUrl
 
     print("\nUsing values:")
-    print("Themes directory:\t", cssDir)
-    print("File extension:\t\t", cssExt)
-    print("Diff URL:\t\t", diffUrl)
+    print(f"Themes directory:\t{cssDir}")
+    print(f"File extension:\t\t{cssExt}")
+    print(f"Use local diff:\t\t{useLocalDiff}")
+    if useLocalDiff == True:
+        print(f"Diff file location:\t{diffUrl}")
+    else:
+        print(f"Diff URL:\t\t{diffUrl}")
 
-    input("\nPress enter to continue or Ctrl+C to cancel.")
+    cssFileNames = glob.glob(os.path.join("..", cssDir, "**", "*." + cssExt), recursive=True)
 
-    return cssDir, cssExt, diffUrl
+    print(f"\nFound {len(cssFileNames)} {cssExt} files in {cssDir}.")
+    input("Press enter to continue or Ctrl+C to cancel.")
+
+    return useLocalDiff, diffUrl, cssFileNames
 
 def readFromFile(fileName):
     with open(fileName, "r", encoding="utf-8") as file:
@@ -28,8 +44,11 @@ def writeToFile(fileName, content):
     with open(fileName, "w", encoding="utf-8") as file:
         file.write(content)
 
-def getClassPairs(diffUrl):
-    diffFileContent = urllib.request.urlopen(diffUrl).read().decode("utf-8").splitlines()
+def getClassPairs(useLocalDiff, diffUrl):
+    if useLocalDiff == True:
+        diffFileContent = readFromFile(diffUrl).splitlines()
+    else:
+        diffFileContent = urllib.request.urlopen(diffUrl).read().decode("utf-8").splitlines()
     classPairs = [[oldClass, newClass] for oldClass, newClass in zip(diffFileContent[::2], diffFileContent[1::2])]
     return classPairs
 
@@ -48,10 +67,11 @@ def replaceClasses(cssString, classPairs):
     return cssString, replaceCount
 
 def main():
-    cssDir, cssExt, diffUrl = getParamsFromUser()
-    classPairs = getClassPairs(diffUrl)
-    cssFileNames = glob.glob(os.path.join("..", cssDir, "**", "*." + cssExt), recursive=True)
+    useLocalDiff, diffUrl, cssFileNames = getParamsFromUser()
+    classPairs = getClassPairs(useLocalDiff, diffUrl)
+
     totalReplaceCount = 0
+    totalFilesChangedCount = 0
 
     for cssFileName in cssFileNames:
         # Get CSS file content
@@ -59,11 +79,13 @@ def main():
 
         # Convert old classes and old class pairs to new classes.
         cssString, replaceCount = replaceClasses(cssString, classPairs)
-        totalReplaceCount += replaceCount
+        if replaceCount > 0:
+            totalFilesChangedCount += 1
+            totalReplaceCount += replaceCount
 
         # Write CSS to file
         writeToFile(cssFileName, cssString)
 
-    print(f"\nReplaced {totalReplaceCount} classes in {len(cssFileNames)} files.")
+    print(f"\nReplaced {totalReplaceCount} classes in {totalFilesChangedCount} files.")
 
 main()
