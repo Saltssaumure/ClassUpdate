@@ -2,7 +2,12 @@
 
 Update class names of all themes in a folder.
 
-Thanks to SyndiShanX for the diff. If you are updating only a single file, use their online tool instead: https://syndishanx.github.io/Website/Update_Classes.html
+Updating only a single file? Use SyndiShanX's online tool instead: https://syndishanx.github.io/Website/Update_Classes.html
+
+## Credits
+- [classchanges](https://github.com/itmesarah/classchanges) by ItsMeSarah for tracking class changes.
+- [discordscripts](https://github.com/NyxIsBad/discordscripts) by NyxIsBad (aka. nightflower) for the formatted changes list.
+- and especially [Update-Classes](https://github.com/SyndiShanX/Update-Classes) by SyndiShanX for the inspiration.
 
 ## Requirements
 - [git](https://git-scm.com/downloads)
