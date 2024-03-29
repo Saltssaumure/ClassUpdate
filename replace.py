@@ -5,7 +5,7 @@ def getParamsFromUser():
     cssExt = "css"
     useLocalDiff = "Y"
     diffFile = "Changes.txt"
-    diffUrl = "https://raw.githubusercontent.com/Saltssaumure/Update-Classes/main/Changes.txt"
+    diffUrl = "https://raw.githubusercontent.com/SyndiShanX/Update-Classes/main/Changes.txt"
 
     # Comment out this section if you want to just hardcode the values.
     print("Leave blank to use default values.")
