@@ -1,0 +1,10 @@
+{
+    "python.analysis.extraPaths": [
+        ".venv/Lib/site-packages"
+    ],
+    "autopep8.args": [
+        "--max-line-length=100"
+    ],
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.autopep8"
+}
