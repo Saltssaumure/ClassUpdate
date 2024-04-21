@@ -1,91 +1,30 @@
-import re, os, glob, urllib.request
+"""
+Update Discord classes in CSS/SCSS files.
+"""
 
-def getParamsFromUser():
-    cssDir = "themes"
-    cssExt = "css"
-    useLocalDiff = "Y"
-    diffFile = "Changes.txt"
-    diffUrl = "https://raw.githubusercontent.com/SyndiShanX/Update-Classes/main/Changes.txt"
 
-    # Comment out this section if you want to just hardcode the values.
-    print("Leave blank to use default values.")
-    cssDir = input(f"Themes directory \t(default: {cssDir}):\t") or cssDir
-    cssExt = input(f"File extension \t\t(default: {cssExt}):\t\t") or cssExt
-    useLocalDiff = input(f"Y/N use local diff\t(default: {useLocalDiff}):\t\t") or useLocalDiff
-    if useLocalDiff.lower() == "y":
-        useLocalDiff = True
-        diffUrl = diffFile
-        diffUrl = input(f"Diff file location\t(default: {diffUrl}):\t") or diffUrl
-    else:
-        useLocalDiff = False
-        diffUrl = input(f"Diff URL \t\t(default: {diffUrl}):\t") or diffUrl
+from lib.file import read_from_file, write_to_file
+from lib.input import get_params_from_user
+from lib.pairs import get_pairs, replace_pairs
 
-    print("\nUsing values:")
-    print(f"Themes directory:\t{cssDir}")
-    print(f"File extension:\t\t{cssExt}")
-    print(f"Use local diff:\t\t{useLocalDiff}")
-    if useLocalDiff == True:
-        print(f"Diff file location:\t{diffUrl}")
-    else:
-        print(f"Diff URL:\t\t{diffUrl}")
+if __name__ == "__main__":
+    use_local_diff, diff_location, css_filenames = get_params_from_user()
+    class_pairs = get_pairs(use_local_diff, diff_location)
 
-    cssFileNames = glob.glob(os.path.join("..", cssDir, "**", "*." + cssExt), recursive=True)
+    TOTAL_REPLACE_COUNT = 0
+    FILES_CHANGED_COUNT = 0
 
-    print(f"\nFound {len(cssFileNames)} {cssExt} files in {cssDir}.")
-    input("Press enter to continue or Ctrl+C to cancel.")
-
-    return useLocalDiff, diffUrl, cssFileNames
-
-def readFromFile(fileName):
-    with open(fileName, "r", encoding="utf-8") as file:
-        return file.read()
-
-def writeToFile(fileName, content):
-    with open(fileName, "w", encoding="utf-8") as file:
-        file.write(content)
-
-def getClassPairs(useLocalDiff, diffUrl):
-    if useLocalDiff == True:
-        diffFileContent = readFromFile(diffUrl).splitlines()
-    else:
-        diffFileContent = urllib.request.urlopen(diffUrl).read().decode("utf-8").splitlines()
-    classPairs = [[oldClass, newClass] for oldClass, newClass in zip(diffFileContent[::2], diffFileContent[1::2])]
-    return classPairs
-
-def replaceClasses(cssString, classPairs):
-    replaceCount = 0
-
-    for oldClass, newClass in classPairs:
-        oldCssString = cssString
-
-        cssPair = f":is(.{oldClass}, .{newClass})"
-        cssString = cssString.replace(cssPair, f".{oldClass}").replace(oldClass, newClass)
-
-        if oldCssString != cssString:
-            replaceCount += 1
-
-    return cssString, replaceCount
-
-def main():
-    useLocalDiff, diffUrl, cssFileNames = getParamsFromUser()
-    classPairs = getClassPairs(useLocalDiff, diffUrl)
-
-    totalReplaceCount = 0
-    totalFilesChangedCount = 0
-
-    for cssFileName in cssFileNames:
+    for css_filename in css_filenames:
         # Get CSS file content
-        cssString = readFromFile(cssFileName)
+        css_string = read_from_file(css_filename)
 
         # Convert old classes and old class pairs to new classes.
-        cssString, replaceCount = replaceClasses(cssString, classPairs)
-        if replaceCount > 0:
-            totalFilesChangedCount += 1
-            totalReplaceCount += replaceCount
+        css_string, replace_count = replace_pairs(css_string, class_pairs)
+        if replace_count > 0:
+            FILES_CHANGED_COUNT += 1
+            TOTAL_REPLACE_COUNT += replace_count
 
         # Write CSS to file
-        writeToFile(cssFileName, cssString)
+        write_to_file(css_filename, css_string)
 
-    print(f"\nReplaced {totalReplaceCount} classes in {totalFilesChangedCount} files.")
-
-main()
+    print(f"\nReplaced {TOTAL_REPLACE_COUNT} classes in {FILES_CHANGED_COUNT} files.")
