@@ -6,7 +6,9 @@ import configparser
 import glob
 import os.path
 
-from lib.format import q
+from lib.format import ind, q
+
+__all__ = ["get_params"]
 
 
 def try_user(config, profile):
@@ -45,11 +47,10 @@ def get_config(config_filename):
 def get_params():
     """Return parameters."""
     config = get_config("config.ini")
-    print("\nUsing values:")
-    print(f"Themes directory:\t{config['dir']}")
-    print(f"File extension:\t\t{config['ext']}")
-    print(f"Use local diff:\t\t{config['uselocaldiff']}")
-    print(f"Diff file location:\t{config['location']}")
+    print(ind(f"Themes directory:\t{config['dir']}"))
+    print(ind(f"File extension:\t{config['ext']}"))
+    print(ind(f"Use local diff:\t{config['uselocaldiff']}"))
+    print(ind(f"Diff file location:\t{config['location']}"))
 
     filenames = glob.glob(os.path.join(
         "..", config["dir"], "**", "*." + config["ext"]

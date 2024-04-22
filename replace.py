@@ -1,30 +1,38 @@
 """
-Update Discord classes in CSS/SCSS files.
+ClassUpdate - Update class names of all themes in a folder.
 """
 
+import asyncio
+from datetime import datetime
 
-from lib.file import read_from_file, write_to_file
 from lib.input import get_params
-from lib.pairs import get_pairs, replace_pairs
+from lib.pairs import get_pairs
+from lib.replacer import replacer
 
 if __name__ == "__main__":
-    use_local_diff, diff_location, css_filenames = get_params()
-    class_pairs = get_pairs(use_local_diff, diff_location)
+    try:
+        print("==== ClassUpdate by Saltssaumure ====\n")
+        use_local_diff, diff_location, css_filenames = get_params()
 
-    TOTAL_REPLACE_COUNT = 0
-    FILES_CHANGED_COUNT = 0
+        start = datetime.now()
+        class_pairs = get_pairs(use_local_diff, diff_location)
 
-    for css_filename in css_filenames:
-        # Get CSS file content
-        css_string = read_from_file(css_filename)
+        replace_counts = []
+        total_replaced = 0
+        files_changed = 0
 
-        # Convert old classes and old class pairs to new classes.
-        css_string, replace_count = replace_pairs(css_string, class_pairs)
-        if replace_count > 0:
-            FILES_CHANGED_COUNT += 1
-            TOTAL_REPLACE_COUNT += replace_count
+        print("\nReplacing...")
+        for css_filename in css_filenames:
+            replace_counts.append(asyncio.run(replacer(css_filename, class_pairs)))
 
-        # Write CSS to file
-        write_to_file(css_filename, css_string)
+        for replace_count in replace_counts:
+            if replace_count > 0:
+                files_changed += 1
+                total_replaced += replace_count
 
-    print(f"\nReplaced {TOTAL_REPLACE_COUNT} classes in {FILES_CHANGED_COUNT} files.")
+        end = datetime.now() - start
+        duration = int(end.total_seconds() * 1000)
+        print(f"\nReplaced {total_replaced} classes in {files_changed} files. ({duration}ms)")
+
+    except KeyboardInterrupt:
+        print("\nUser cancelled.")
