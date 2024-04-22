@@ -4,11 +4,11 @@ Update Discord classes in CSS/SCSS files.
 
 
 from lib.file import read_from_file, write_to_file
-from lib.input import get_params_from_user
+from lib.input import get_params
 from lib.pairs import get_pairs, replace_pairs
 
 if __name__ == "__main__":
-    use_local_diff, diff_location, css_filenames = get_params_from_user()
+    use_local_diff, diff_location, css_filenames = get_params()
     class_pairs = get_pairs(use_local_diff, diff_location)
 
     TOTAL_REPLACE_COUNT = 0
