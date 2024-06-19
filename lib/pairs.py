@@ -27,8 +27,7 @@ def replace_pairs(string, pairs):
     for old, new in pairs:
         old_string = string
 
-        pair = f":is(.{old}, .{new})"
-        string = string.replace(pair, f".{old}").replace(old, new)
+        string = string.replace(old, new)
 
         if old_string != string:
             replaces += 1
