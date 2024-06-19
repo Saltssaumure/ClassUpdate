@@ -33,7 +33,8 @@ Updating only a single file? Use SyndiShanX's online tool instead: https://syndi
 2. Edit config.ini if desired
     - See section below for detailed info
 3. Run the script
-    - `python ./ClassUpdate/replace.py`
+    - `cd ./ClassUpdate`
+    - `python ./replace.py`
 
 ### Example
 Files marked with `↻` will be updated by the script if using the default config.
