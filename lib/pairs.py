@@ -8,15 +8,14 @@ from lib.file import read_from_file
 
 
 def get_pairs(local_bool, location):
-    """Returns list of pairs from local or online diff file."""
+    """Returns dict of pairs from local or online diff file."""
     if local_bool is True:
         diff = read_from_file(location).splitlines()
     else:
         with urllib.request.urlopen(location) as response:
             diff = response.read().decode("utf-8").splitlines()
 
-    pairs = [[old_class, new_class]
-             for old_class, new_class in zip(diff[::2], diff[1::2])]
+    pairs = dict(zip(diff[::2], diff[1::2])).items()
 
     return pairs
 
